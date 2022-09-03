@@ -1,3 +1,5 @@
+# @sycon-app/dim3
+
 ## Publishing
 
 Once all `TODO` notes have been updated & your new module is ready to be shared, all that's left to do is decide its new version &mdash; AKA, do the changes consitute a `patch`, `minor`, or `major` release?
