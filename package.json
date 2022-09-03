@@ -15,6 +15,9 @@
         "email": "jdeurt@gmail.com",
         "url": "https://jdeurt.xyz"
     },
+    "publishConfig": {
+        "@sycon-app:registry": "https://npm.pkg.github.com"
+    },
     "files": [
         "dist",
         "types"
