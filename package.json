@@ -1,8 +1,8 @@
 {
     "version": "0.0.1",
-    "name": "dim3",
-    "umd:name": "dim3",
-    "repository": "sycon-app/dim3",
+    "name": "@sycon-app/dim3",
+    "umd:name": "@sycon-app/dim3",
+    "repository": "https://github.com/sycon-app/dim3",
     "description": "",
     "unpkg": "dist/index.min.js",
     "module": "dist/index.mjs",
