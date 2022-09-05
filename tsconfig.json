@@ -19,6 +19,6 @@
         "strict": true,
         "esModuleInterop": true
     },
-    "include": ["@types/**/*", "src/**/*"],
+    "include": ["@types/**/*", "src/**/*", "src/structs/dimensions/.ts"],
     "exclude": ["node_modules"]
 }
