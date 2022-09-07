@@ -1,15 +1,18 @@
-import { Dimension, IDimensions } from "../types";
+import { Dimension, IDimensions, Position } from "../types";
+import { Bounds } from "../types/bounds";
 import { Dimensions } from "./dimensions";
 
-export class Box extends Dimensions {
-    children: Box[];
-    margin: number;
+type PositionMap = { bounds: Bounds; children: PositionMap }[];
 
-    constructor(dims: IDimensions, children: Box[] = [], margin = 0) {
+export class Box extends Dimensions {
+    margin: number;
+    children: Box[];
+
+    constructor(dims: IDimensions, margin = 0, children: Box[] = []) {
         super(dims);
 
-        this.children = children;
         this.margin = margin;
+        this.children = children;
     }
 
     static from(dimensions: Dimensions) {
@@ -39,10 +42,7 @@ export class Box extends Dimensions {
             0
         );
 
-        return new Box({ width, height, length }, optimalChildren).makeLongest(
-            "length",
-            ["width", "length"]
-        );
+        return new Box({ width, height, length }, 0, optimalChildren);
     }
 
     dimensionsWithMarginApplied(): IDimensions {
@@ -51,6 +51,67 @@ export class Box extends Dimensions {
             height: this.height + this.margin * 2,
             length: this.length + this.margin * 2,
         };
+    }
+
+    clone(): Box {
+        return new Box(
+            this.plain(),
+            this.margin,
+            this.children.map((child) => child.clone())
+        );
+    }
+
+    fitsInside(boxOrDimensions: Dimensions): boolean {
+        const { width, height, length } = this.dimensionsWithMarginApplied();
+
+        return (
+            width <= boxOrDimensions.width &&
+            height <= boxOrDimensions.height &&
+            length <= boxOrDimensions.length
+        );
+    }
+
+    childPositions(): PositionMap {
+        const map: PositionMap = [];
+
+        for (const child of this.children) {
+            const last: Bounds = map[map.length - 1]?.bounds ?? [
+                { x: 0, y: 0, z: 0 },
+                { x: 0, y: 0, z: 0 },
+            ];
+
+            const childBounds = child.bounds();
+
+            map.push({
+                bounds: [
+                    { ...childBounds[0], z: last[1].z },
+                    { ...childBounds[1], z: last[1].z + childBounds[1].z },
+                ],
+                children: child.childPositions(),
+            });
+        }
+
+        return map;
+    }
+
+    bounds(startingPoint?: Position): Bounds {
+        const start = startingPoint ?? { x: 0, y: 0, z: 0 };
+        const boxDimensions = this.dimensionsWithMarginApplied();
+
+        return [
+            start,
+            {
+                x: start.x + boxDimensions.width,
+                y: start.y + boxDimensions.height,
+                z: start.z + boxDimensions.length,
+            },
+        ];
+    }
+
+    addChildren(children: Box[]): Box {
+        this.children.push(...children);
+
+        return this;
     }
 
     makeLongest(dimension: Dimension, compare?: Dimension[]): Box {
@@ -124,13 +185,5 @@ export class Box extends Dimensions {
         const largestDimensionValue = Math.max(width, height, length);
 
         return this.scale(unit / largestDimensionValue);
-    }
-
-    clone(): Box {
-        return new Box(
-            this.plain(),
-            this.children.map((child) => child.clone()),
-            this.margin
-        );
     }
 }

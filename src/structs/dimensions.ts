@@ -1,14 +1,29 @@
-import { Axis, Dimension, IDimensions } from "../types";
+import { Axis, Dimension, IDimensions, Position } from "../types";
+import { Bounds } from "../types/bounds";
 
 export class Dimensions implements IDimensions {
     width: number;
     height: number;
     length: number;
 
-    constructor(dims: IDimensions) {
-        this.width = dims.width;
-        this.height = dims.height;
-        this.length = dims.length;
+    constructor({ width, height, length }: IDimensions) {
+        if (!Dimensions.valid({ width, height, length })) {
+            throw new Error(
+                "Invalid dimensions. All dimensions must be 0 or greater"
+            );
+        }
+
+        this.width = width;
+        this.height = height;
+        this.length = length;
+    }
+
+    static valid({ width, height, length }: IDimensions): boolean {
+        if (width < 0 || height < 0 || length < 0) {
+            return false;
+        }
+
+        return true;
     }
 
     static axisToDim(axis: Axis): Dimension {
@@ -27,10 +42,31 @@ export class Dimensions implements IDimensions {
         })[dim];
     }
 
+    clone(): Dimensions {
+        return new Dimensions({
+            width: this.width,
+            height: this.height,
+            length: this.length,
+        });
+    }
+
     plain(): IDimensions {
         const { width, height, length } = this;
 
         return { width, height, length };
+    }
+
+    bounds(startingPoint?: Position): Bounds {
+        const start = startingPoint ?? { x: 0, y: 0, z: 0 };
+
+        return [
+            start,
+            {
+                x: start.x + this.width,
+                y: start.y + this.height,
+                z: start.z + this.length,
+            },
+        ];
     }
 
     longestDimension(compare?: Dimension[]): Dimension {
@@ -197,13 +233,5 @@ export class Dimensions implements IDimensions {
             height: (dimensions.height / largestDimensionValue) * unit,
             length: (dimensions.length / largestDimensionValue) * unit,
         }));
-    }
-
-    clone(): Dimensions {
-        return new Dimensions({
-            width: this.width,
-            height: this.height,
-            length: this.length,
-        });
     }
 }
